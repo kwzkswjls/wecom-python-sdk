@@ -1,0 +1,8 @@
+build
+cmake-build-debug
+CMakeFiles
+
+*.egg-info
+
+venv
+.idea
