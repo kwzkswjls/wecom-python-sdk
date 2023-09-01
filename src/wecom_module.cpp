@@ -31,6 +31,7 @@ static int sdk_init(SDKObject *self, PyObject *args, PyObject *kwargs) {
             args, kwargs, "ss|ss", const_cast<char **>(kwlist),
             &corpId, &secret,
             &self->proxy, &self->proxyAuth)) {
+        PyErr_Format(PyExc_RuntimeError, "invalid params");
         return -1;
     }
     self->sdkInstance = NewSdk();
@@ -45,7 +46,7 @@ static int sdk_init(SDKObject *self, PyObject *args, PyObject *kwargs) {
 }
 
 static PyObject *sdk_getChatData(SDKObject *self, PyObject *args, PyObject *kwargs) {
-    uint64_t seq, limit;
+    uint64_t seq = 0, limit = 10;
     int timeout = 5;
     const char *kwlist[] = {"seq", "limit", "timeout", nullptr};
 
@@ -56,6 +57,7 @@ static PyObject *sdk_getChatData(SDKObject *self, PyObject *args, PyObject *kwar
     }
 
     auto *chatData = NewSlice();
+
     int ret = GetChatData(
             self->sdkInstance,
             seq, limit,
@@ -63,6 +65,7 @@ static PyObject *sdk_getChatData(SDKObject *self, PyObject *args, PyObject *kwar
             timeout,
             chatData
     );
+
     if (ret != 0) {
         PyErr_Format(PyExc_RuntimeError, "get chat data error: %d", ret);
         return nullptr;
@@ -151,10 +154,10 @@ static PyObject *sdk_decryptData(SDKObject *, PyObject *args, PyObject *kwargs) 
 
 
 static PyMethodDef sdk_methods[] = {
-        {"get_chat_data", (PyCFunction) sdk_getChatData, METH_FLAG, "Get chat data"},
+        {"get_chat_data",  (PyCFunction) sdk_getChatData,  METH_FLAG, "Get chat data"},
         {"get_media_file", (PyCFunction) sdk_getMediaFile, METH_FLAG, "Download media file"},
-        {"decrypt_data", (PyCFunction) sdk_decryptData, METH_FLAG, "Decrypt data"},
-        {nullptr, nullptr, 0, nullptr}
+        {"decrypt_data",   (PyCFunction) sdk_decryptData,  METH_FLAG, "Decrypt data"},
+        {nullptr,          nullptr,                        0,         nullptr}
 };
 
 static PyTypeObject SDKType = {
